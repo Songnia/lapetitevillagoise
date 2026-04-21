@@ -1,8 +1,8 @@
 const logoItems = [
-  '/assets/logo.png',
-  '/assets/logo.png',
-  '/assets/logo.png',
-  '/assets/logo.png',
+  '/assets/logo.webp',
+  '/assets/logo.webp',
+  '/assets/logo.webp',
+  '/assets/logo.webp',
 ];
 
 export default function Footer() {

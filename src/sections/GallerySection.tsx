@@ -6,12 +6,12 @@ import SectionHeader from '@/components/SectionHeader';
 gsap.registerPlugin(ScrollTrigger);
 
 const galleryImages = [
-  { src: '/assets/gallery-restaurant-front.jpg', alt: 'Façade du restaurant', aspect: '16/9' as const },
-  { src: '/assets/gallery-table-setting.png', alt: 'Table dressée', aspect: '3/4' as const },
-  { src: '/assets/gallery-food-platter.png', alt: 'Plat à partager', aspect: '16/9' as const },
-  { src: '/assets/gallery-detail.png', alt: 'Détail culinaire', aspect: '3/4' as const },
-  { src: '/assets/gallery-staff1.jpeg', alt: 'Ambiance brunch', aspect: '16/9' as const },
-  { src: '/assets/gallery-staff.jpeg', alt: 'Notre équipe', aspect: '3/4' as const },
+  { src: '/assets/gallery-restaurant-front.webp', alt: 'Façade du restaurant', aspect: '16/9' as const },
+  { src: '/assets/gallery-table-setting.webp', alt: 'Table dressée', aspect: '3/4' as const },
+  { src: '/assets/gallery-food-platter.webp', alt: 'Plat à partager', aspect: '16/9' as const },
+  { src: '/assets/gallery-detail.webp', alt: 'Détail culinaire', aspect: '3/4' as const },
+  { src: '/assets/gallery-staff1.webp', alt: 'Ambiance brunch', aspect: '16/9' as const },
+  { src: '/assets/gallery-staff.webp', alt: 'Notre équipe', aspect: '3/4' as const },
 ];
 
 export default function GallerySection() {

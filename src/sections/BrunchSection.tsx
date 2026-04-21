@@ -108,7 +108,7 @@ export default function BrunchSection() {
           {/* Left: Image */}
           <div className="lg:w-1/2">
             <ClipImage
-              src="/assets/brunch-buffet.png"
+              src="/assets/brunch-buffet.webp"
               alt="Buffet brunch"
               aspectRatio="3/4"
               className="w-full"

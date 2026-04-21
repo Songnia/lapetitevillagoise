@@ -84,7 +84,7 @@ export default function HeroSection() {
       {/* Background Image */}
       <div ref={bgRef} className="absolute inset-0 z-0 opacity-0">
         <img
-          src="/assets/hero-bg.jpg"
+          src="/assets/hero-bg.webp"
           alt="Intérieur du restaurant"
           className="w-full h-full object-cover"
         />

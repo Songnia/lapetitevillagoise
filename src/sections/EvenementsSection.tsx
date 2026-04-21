@@ -10,7 +10,7 @@ const events = [
   {
     title: 'Vendredi On Décompresse',
     description: "À partir de 20 personnes. Planche 'No-Stress' avec saucisse et accompagnements au choix : porc braisé, poulet braisé ou maquereau braisé.",
-    image: '/assets/event-afterwork.png',
+    image: '/assets/event-afterwork.webp',
     badge: '5 900 FCFA / pers.',
     features: [
       'Jeux de société : Ludo, cartes, Scrabble',
@@ -21,7 +21,7 @@ const events = [
   {
     title: 'Ateliers & Privatisation',
     description: 'Des ateliers créatifs pour enfants le dimanche et une salle modulable pour vos événements privés ou professionnels.',
-    image: '/assets/event-workshop.png',
+    image: '/assets/event-workshop.webp',
     badge: null,
     features: [
       'Ateliers peinture & jeux pour enfants',
