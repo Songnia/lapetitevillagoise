@@ -1,3 +1,5 @@
+import { Link, useLocation, useNavigate } from 'react-router';
+
 const logoItems = [
   '/assets/logo.webp',
   '/assets/logo.webp',
@@ -7,10 +9,39 @@ const logoItems = [
 
 export default function Footer() {
   const allLogos = [...logoItems, ...logoItems, ...logoItems];
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHome = location.pathname === '/';
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    
+    if (href.startsWith('/')) {
+      navigate(href);
+      return;
+    }
+
+    if (!isHome) {
+      navigate('/', { state: { scrollTo: href } });
+    } else {
+      const el = document.querySelector(href);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const navLinks = [
+    { label: 'Menu', href: isHome ? '#menu' : '/menu' },
+    { label: 'Brunch', href: '#brunch' },
+    { label: 'Événements', href: '#evenements' },
+    { label: 'Galerie', href: '#galerie' },
+    { label: 'Contact', href: '#contact' },
+  ];
 
   return (
     <footer className="bg-forest-deep pt-20 pb-12 page-padding">
-      {/* Logo Marquee */}
+      {/* ... (Logo Marquee omitted for brevity) ... */}
       <div className="overflow-hidden w-full mb-10">
         <div className="flex animate-marquee whitespace-nowrap">
           {allLogos.map((logo, i) => (
@@ -47,15 +78,22 @@ export default function Footer() {
             Navigation
           </h4>
           <div className="flex flex-col gap-2">
-            {['Menu', 'Brunch', 'Événements', 'Galerie', 'Contact'].map((item) => (
+            {navLinks.map((link) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}`}
+                key={link.label}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="font-body text-base text-midgray hover:text-cream transition-colors duration-200"
               >
-                {item}
+                {link.label}
               </a>
             ))}
+            <Link
+              to="/politique-de-retour"
+              className="font-body text-base text-midgray hover:text-cream transition-colors duration-200 mt-2"
+            >
+              Politique de Retour
+            </Link>
           </div>
         </div>
 
