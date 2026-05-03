@@ -6,7 +6,7 @@ import SectionHeader from '@/components/SectionHeader';
 import TiltCard from '@/components/TiltCard';
 import ClipImage from '@/components/ClipImage';
 import AddToCartButton from '@/components/AddToCartButton';
-import { menuItems } from '@/lib/menu-data';
+import { useAdminStore } from '@/hooks/useAdminStore';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +14,7 @@ export default function MenuSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const { outOfStockItems, menuItems } = useAdminStore();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -50,8 +51,10 @@ export default function MenuSection() {
     return () => ctx.revert();
   }, []);
 
-  // Show only 4 items on the home page preview
-  const previewItems = menuItems.slice(0, 4);
+  // Show only 4 items on the home page preview, excluding out-of-stock
+  const previewItems = menuItems
+    .filter(item => !outOfStockItems.includes(item.name))
+    .slice(0, 4);
   const leftItems = previewItems.filter((_, i) => i % 2 === 0);
   const rightItems = previewItems.filter((_, i) => i % 2 === 1);
 

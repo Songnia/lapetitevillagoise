@@ -77,7 +77,7 @@ export default function EvenementsSection() {
           {events.map((event) => (
             <div
               key={event.title}
-              className="event-card bg-cream/5 border border-cream/10 overflow-hidden hover:-translate-y-1 transition-transform duration-300 opacity-0"
+              className="event-card bg-cream/5 border border-cream/10 overflow-hidden hover:-translate-y-1 transition-transform duration-300 opacity-0 flex flex-col h-full"
             >
               {/* Image with optional badge */}
               <div className="relative">
@@ -94,21 +94,35 @@ export default function EvenementsSection() {
               </div>
 
               {/* Content */}
-              <div className="p-8">
+              <div className="p-8 flex flex-col h-full">
                 <h3 className="font-display text-[clamp(28px,3vw,48px)] leading-tight text-cream tracking-[-0.01em]">
                   {event.title}
                 </h3>
                 <p className="font-body text-base text-cream/70 mt-3 leading-relaxed">
                   {event.description}
                 </p>
-                <ul className="mt-4 space-y-2">
-                  {event.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-terracotta mt-2 flex-shrink-0" />
-                      <span className="font-body text-sm text-cream/60">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                  <ul className="space-y-3 mb-8 mt-4">
+                    {event.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="w-1.5 h-1.5 mt-2 bg-terracotta rounded-full shrink-0" />
+                        <span className="font-body text-sm text-cream/60">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-auto">
+                    <a
+                      href={`https://wa.me/237683332131?text=${encodeURIComponent(
+                        `Bonjour, je souhaiterais en savoir plus sur l'événement : ${event.title}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-cream font-display text-sm uppercase tracking-wider hover:text-terracotta transition-colors group"
+                    >
+                      En savoir plus
+                      <span className="w-8 h-[1px] bg-cream group-hover:bg-terracotta transition-colors" />
+                    </a>
+                  </div>
               </div>
             </div>
           ))}

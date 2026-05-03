@@ -3,6 +3,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionHeader from '@/components/SectionHeader';
 import ClipImage from '@/components/ClipImage';
+import { useCart } from '@/hooks/useCart';
+import { useNavigate } from 'react-router';
+import type { MenuItem } from '@/lib/menu-data';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -43,6 +46,13 @@ export default function BrunchSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
   const pricingRef = useRef<HTMLDivElement>(null);
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
+  const handleDirectBooking = (item: MenuItem) => {
+    addItem(item);
+    navigate('/checkout');
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -150,16 +160,51 @@ export default function BrunchSection() {
               ))}
             </div>
 
-            {/* CTA */}
-            <a
-              href="tel:+237696619171"
-              className="inline-block border border-forest text-forest text-xs uppercase tracking-[0.15em] font-body font-medium px-10 py-3.5 rounded-full hover:bg-forest hover:text-cream transition-colors duration-250"
-            >
-              R&eacute;server pour le Brunch
-            </a>
+            {/* CTA - Dynamic Reservation */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => handleDirectBooking({
+                  name: 'Brunch Traditionnel (Adulte)',
+                  description: 'Buffet complet, Karaoké & Piano Live. Dimanche 12h-17h.',
+                  price: '12 500 FCFA',
+                  image: '/assets/brunch-buffet.webp',
+                  category: 'Brunch'
+                })}
+                className="flex-1 bg-forest text-cream text-xs uppercase tracking-[0.15em] font-body font-medium px-8 py-4 rounded-full hover:bg-forest-deep transition-all duration-300 shadow-lg shadow-forest/10 active:scale-95"
+              >
+                Réserver (Adulte)
+              </button>
+              <button
+                onClick={() => handleDirectBooking({
+                  name: 'Brunch Traditionnel (Enfant)',
+                  description: 'Buffet complet pour enfant (-10 ans). Dimanche 12h-17h.',
+                  price: '10 000 FCFA',
+                  image: '/assets/brunch-buffet.webp',
+                  category: 'Brunch'
+                })}
+                className="flex-1 border border-forest text-forest text-xs uppercase tracking-[0.15em] font-body font-medium px-8 py-4 rounded-full hover:bg-forest hover:text-cream transition-all duration-300 active:scale-95"
+              >
+                Réserver (Enfant)
+              </button>
+            </div>
+            
+            <div className="mt-8 flex justify-center lg:justify-start">
+              <a
+                href={`https://wa.me/237683332131?text=${encodeURIComponent(
+                  "Bonjour, je souhaiterais avoir plus d'informations sur le Brunch du Dimanche"
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-forest font-body uppercase tracking-[0.15em] font-bold hover:text-terracotta transition-colors flex items-center gap-3 group"
+              >
+                <span className="w-8 h-[1px] bg-forest group-hover:bg-terracotta transition-colors" />
+                Questions sur le brunch ? Contactez-nous
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 }
+

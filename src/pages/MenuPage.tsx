@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import gsap from 'gsap';
 import SectionHeader from '@/components/SectionHeader';
-import { menuItems } from '@/lib/menu-data';
+import { useAdminStore } from '@/hooks/useAdminStore';
 import TiltCard from '@/components/TiltCard';
 import ClipImage from '@/components/ClipImage';
 import AddToCartButton from '@/components/AddToCartButton';
@@ -14,10 +14,12 @@ export default function MenuPage() {
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
   const sectionRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const { outOfStockItems, menuItems } = useAdminStore();
 
   // Filtering Logic - More robust
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {
+      const isAvailable = !outOfStockItems.includes(item.name);
       const search = searchQuery.toLowerCase().trim();
       const matchesSearch = !search || 
                           item.name.toLowerCase().includes(search) || 
@@ -26,9 +28,9 @@ export default function MenuPage() {
       const matchesCategory = selectedCategory === 'Toutes' || 
                             item.category?.trim() === selectedCategory.trim();
       
-      return matchesSearch && matchesCategory;
+      return isAvailable && matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, outOfStockItems]);
 
   // Animation logic with better cleanup
   useEffect(() => {
@@ -146,7 +148,18 @@ export default function MenuPage() {
                             {item.description}
                           </p>
                           
-                          <div className="mt-auto">
+                          <div className="flex flex-col gap-3">
+                            <a
+                              href={`https://wa.me/237683332131?text=${encodeURIComponent(
+                                `Bonjour, je souhaiterais avoir plus d'informations sur le plat : ${item.name}`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] md:text-xs text-forest font-body uppercase tracking-[0.1em] font-bold hover:text-terracotta transition-colors flex items-center gap-2 group/wa"
+                            >
+                              <span className="w-4 h-[1px] bg-forest group-hover/wa:bg-terracotta transition-colors" />
+                              En savoir plus
+                            </a>
                             <AddToCartButton item={item} className="w-full py-2.5 md:py-3 text-sm" />
                           </div>
                         </div>

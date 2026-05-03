@@ -1,20 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/useCart';
+import { useAdminStore } from '@/hooks/useAdminStore';
 import DeliverySection from '@/components/DeliverySection';
 import { CreditCard, Smartphone, CheckCircle2, ArrowLeft, Loader2, Truck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { geniusPay } from '@/lib/geniuspay';
 
 export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCart();
+  const { settings, addOrder } = useAdminStore();
   const [deliveryPrice, setDeliveryPrice] = useState(0);
   const [deliveryData, setDeliveryData] = useState({ phone: '', landmark: '', city: '', quarter: '' });
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'momo' | 'cod'>('momo');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'momo' | 'cod'>('cod');
   const [needChange, setNeedChange] = useState<string>('non');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderNumber] = useState(() => Math.floor(1000 + Math.random() * 9000));
   const navigate = useNavigate();
+
+  // Set default payment method when settings are loaded
+  useEffect(() => {
+    if (settings.isGeniusPayEnabled) {
+      setPaymentMethod('momo');
+    } else {
+      setPaymentMethod('cod');
+    }
+  }, [settings.isGeniusPayEnabled]);
 
   const total = getTotalPrice() + deliveryPrice;
 
@@ -23,7 +35,7 @@ export default function CheckoutPage() {
     deliveryData.city !== '' && 
     deliveryData.quarter !== '';
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!isValid) {
       toast.error("Veuillez remplir les informations de livraison", {
         description: "Le téléphone, la ville et le quartier sont obligatoires.",
@@ -32,15 +44,76 @@ export default function CheckoutPage() {
     }
 
     setIsProcessing(true);
-    // Simulate order processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      clearCart();
-      toast.success(paymentMethod === 'cod' ? "Commande enregistrée !" : "Paiement réussi !", {
-        description: paymentMethod === 'cod' ? "Préparez la somme exacte pour le livreur." : "Votre repas est en route.",
-      });
-    }, 2500);
+    
+    // Create the order object
+    const orderData = {
+      customer: {
+        name: "Client Invité",
+        phone: deliveryData.phone,
+        whatsapp: deliveryData.phone.startsWith('237') ? deliveryData.phone : `237${deliveryData.phone}`,
+      },
+      delivery: {
+        neighborhood: `${deliveryData.quarter}, ${deliveryData.city}`,
+        landmark: deliveryData.landmark,
+        monnaie: paymentMethod === 'cod' && needChange !== 'non' ? `Sur ${needChange} FCFA` : 'Somme exacte',
+        fee: deliveryPrice,
+      },
+      items: items.map(item => ({
+        ...item,
+        quantity: item.quantity
+      })),
+      total: total,
+      paymentMethod: paymentMethod
+    };
+
+    if (paymentMethod === 'cod') {
+      // Simulate order processing for Cash on Delivery
+      setTimeout(() => {
+        addOrder(orderData);
+        setIsProcessing(false);
+        setIsSuccess(true);
+        clearCart();
+        toast.success("Commande enregistrée !", {
+          description: "Préparez la somme exacte pour le livreur.",
+        });
+      }, 2500);
+    } else {
+      // GeniusPay Integration for Card/Momo
+      try {
+        const response = await geniusPay.initiatePayment({
+          amount: total,
+          description: `Commande #${orderNumber} - La Petite Villageoise`,
+          customer: {
+            name: "Client Invité",
+            phone: deliveryData.phone,
+          },
+          success_url: `${window.location.origin}/checkout/success`,
+          error_url: `${window.location.origin}/checkout?payment_error=true`,
+          metadata: {
+            order_number: orderNumber,
+            ...orderData
+          }
+        });
+
+        if (response.success && response.data.checkout_url) {
+          // SAVE TEMPORARY ORDER to localStorage as backup for SuccessPage
+          localStorage.setItem('last_pending_order', JSON.stringify({
+            ...orderData,
+            order_number: orderNumber
+          }));
+          
+          // Redirect to GeniusPay
+          window.location.href = response.data.checkout_url;
+        } else {
+          throw new Error("Impossible de générer l'URL de paiement");
+        }
+      } catch (error: any) {
+        toast.error("Erreur de paiement", {
+          description: error.message || "Une erreur est survenue lors de l'initialisation du paiement.",
+        });
+        setIsProcessing(false);
+      }
+    }
   };
 
   if (isSuccess) {
@@ -128,35 +201,39 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-xl shadow-sm border border-forest/10 p-8">
                 <h3 className="font-display text-xl text-forest mb-6 uppercase tracking-wider font-bold">Moyen de paiement</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                  <button
-                    onClick={() => setPaymentMethod('momo')}
-                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                      paymentMethod === 'momo' ? 'border-terracotta bg-terracotta/5' : 'border-forest/5 hover:border-forest/20'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg ${paymentMethod === 'momo' ? 'bg-terracotta text-cream' : 'bg-forest/5 text-forest'}`}>
-                      <Smartphone className="w-6 h-6" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-body font-bold text-charcoal">Mobile Money</p>
-                      <p className="font-body text-xs text-midgray">Orange / MTN</p>
-                    </div>
-                  </button>
+                  {settings.isGeniusPayEnabled && (
+                    <>
+                      <button
+                        onClick={() => setPaymentMethod('momo')}
+                        className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+                          paymentMethod === 'momo' ? 'border-terracotta bg-terracotta/5' : 'border-forest/5 hover:border-forest/20'
+                        }`}
+                      >
+                        <div className={`p-3 rounded-lg ${paymentMethod === 'momo' ? 'bg-terracotta text-cream' : 'bg-forest/5 text-forest'}`}>
+                          <Smartphone className="w-6 h-6" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-body font-bold text-charcoal">Mobile Money</p>
+                          <p className="font-body text-xs text-midgray">Orange / MTN</p>
+                        </div>
+                      </button>
 
-                  <button
-                    onClick={() => setPaymentMethod('card')}
-                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                      paymentMethod === 'card' ? 'border-terracotta bg-terracotta/5' : 'border-forest/5 hover:border-forest/20'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-lg ${paymentMethod === 'card' ? 'bg-terracotta text-cream' : 'bg-forest/5 text-forest'}`}>
-                      <CreditCard className="w-6 h-6" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-body font-bold text-charcoal">Carte Bancaire</p>
-                      <p className="font-body text-xs text-midgray">Visa / Mastercard</p>
-                    </div>
-                  </button>
+                      <button
+                        onClick={() => setPaymentMethod('card')}
+                        className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+                          paymentMethod === 'card' ? 'border-terracotta bg-terracotta/5' : 'border-forest/5 hover:border-forest/20'
+                        }`}
+                      >
+                        <div className={`p-3 rounded-lg ${paymentMethod === 'card' ? 'bg-terracotta text-cream' : 'bg-forest/5 text-forest'}`}>
+                          <CreditCard className="w-6 h-6" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-body font-bold text-charcoal">Carte Bancaire</p>
+                          <p className="font-body text-xs text-midgray">Visa / Mastercard</p>
+                        </div>
+                      </button>
+                    </>
+                  )}
 
                   <button
                     onClick={() => setPaymentMethod('cod')}
