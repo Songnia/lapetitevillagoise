@@ -27,7 +27,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   paymentRef?: string;
-  paymentMethod: 'cod' | 'momo';
+  paymentMethod: 'cod' | 'momo' | 'card';
 }
 
 export interface AdminSettings {
